@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { ALL_CENTRES, COUNTRY_REGIONS } from './data';
 import { TVETCentre, ActiveTab } from './types';
 import MapSection from './components/MapSection';
@@ -13,6 +13,18 @@ export default function App() {
   const [selectedCountry, setSelectedCountry] = useState<string>('');
   const [selectedRegion, setSelectedRegion] = useState<string>('');
   const [compareList, setCompareList] = useState<TVETCentre[]>([]);
+
+  // Automatically deselect active spotlight center if region or country filter is changed manually and the center doesn't match
+  useEffect(() => {
+    if (selectedCentre) {
+      const region = COUNTRY_REGIONS[selectedCentre.country] || 'Other';
+      const matchesRegion = !selectedRegion || region === selectedRegion;
+      const matchesCountry = !selectedCountry || selectedCentre.country === selectedCountry;
+      if (!matchesRegion || !matchesCountry) {
+        setSelectedCentre(null);
+      }
+    }
+  }, [selectedRegion, selectedCountry]);
 
   // Add or remove a center to the comparison list
   const handleAddToCompare = (centre: TVETCentre) => {

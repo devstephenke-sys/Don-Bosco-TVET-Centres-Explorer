@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo, useRef, useEffect } from 'react';
 import { motion } from 'motion/react';
 import { TVETCentre } from '../types';
 import { COUNTRY_REGIONS, REGION_COLORS } from '../data';
@@ -263,6 +263,14 @@ export default function MapSection({
       y: height / 2 - item.y * zoomLevel
     });
   };
+
+  // Auto-center map on selected centre when selectedCentre changes
+  useEffect(() => {
+    if (selectedCentre) {
+      const { x, y } = project(selectedCentre.coordinates.lat, selectedCentre.coordinates.lon);
+      centerOnItem({ x, y });
+    }
+  }, [selectedCentre]);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 items-start">

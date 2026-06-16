@@ -329,6 +329,8 @@ export default function CenterList({
                       onClick={(e) => {
                         e.stopPropagation();
                         onSelectCentre(centre);
+                        onSelectRegion(COUNTRY_REGIONS[centre.country] || '');
+                        onSelectCountry(centre.country);
                         onActiveTab('map');
                       }}
                       className="text-[11px] font-bold text-[#C9A227] hover:underline inline-flex items-center gap-1 cursor-pointer"
@@ -396,6 +398,8 @@ export default function CenterList({
                         onClick={(e) => {
                           e.stopPropagation();
                           onSelectCentre(centre);
+                          onSelectRegion(COUNTRY_REGIONS[centre.country] || '');
+                          onSelectCountry(centre.country);
                           onActiveTab('map');
                         }}
                         className="px-2.5 py-1 text-[10px] font-bold bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-md transition-colors cursor-pointer"
