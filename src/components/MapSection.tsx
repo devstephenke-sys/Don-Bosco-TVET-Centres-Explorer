@@ -11,6 +11,7 @@ interface MapSectionProps {
   selectedCountry: string;
   onSelectCountry: (country: string) => void;
   selectedRegion: string;
+  onSelectRegion: (region: string) => void;
 }
 
 // Bounding box for mapping latitude/longitude to SVG viewport coordinates
@@ -72,7 +73,8 @@ export default function MapSection({
   onSelectCentre,
   selectedCountry,
   onSelectCountry,
-  selectedRegion
+  selectedRegion,
+  onSelectRegion
 }: MapSectionProps) {
   const [zoom, setZoom] = useState<number>(1);
   const [pan, setPan] = useState<{ x: number; y: number }>({ x: 0, y: 0 });
@@ -117,6 +119,19 @@ export default function MapSection({
     const lonDirection = lon >= 0 ? 'E' : 'W';
     return `${Math.abs(lat).toFixed(4)}° ${latDirection}, ${Math.abs(lon).toFixed(4)}° ${lonDirection}`;
   };
+
+  // Filter lists for sidebar controls
+  const uniqueRegions = ['All', 'West Africa', 'East Africa', 'Central Africa', 'Southern Africa'];
+  const uniqueCountries = useMemo(() => {
+    const list = new Set<string>();
+    centres.forEach(c => {
+      const region = COUNTRY_REGIONS[c.country] || 'Other';
+      if (!selectedRegion || region === selectedRegion) {
+        list.add(c.country);
+      }
+    });
+    return Array.from(list).sort();
+  }, [centres, selectedRegion]);
 
   // Zoom handlers
   const handleZoomIn = () => {
@@ -198,6 +213,61 @@ export default function MapSection({
           <p className="text-xs text-white/40 mt-1">
             Plotted on interactive coordinate grids projecting actual GPS coordinates of TVET centres.
           </p>
+        </div>
+
+        {/* Dynamic Map Filters Selectors */}
+        <div className="border-t border-white/10 pt-4 space-y-4">
+          <div className="flex items-center justify-between">
+            <span className="font-semibold text-[#C9A227] text-xs uppercase tracking-wider">Map Filters</span>
+            {(selectedRegion || selectedCountry) && (
+              <button
+                onClick={() => {
+                  onSelectRegion('');
+                  onSelectCountry('');
+                }}
+                className="text-[10px] text-rose-400 hover:underline cursor-pointer"
+              >
+                Reset
+              </button>
+            )}
+          </div>
+          
+          {/* Region Dropdown */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-mono text-white/50 uppercase tracking-widest block font-bold">Geographic Region</label>
+            <select
+              value={selectedRegion || 'All'}
+              onChange={(e) => {
+                const reg = e.target.value;
+                onSelectRegion(reg === 'All' ? '' : reg);
+                onSelectCountry(''); // Reset country on region shifts
+              }}
+              className="w-full bg-black/45 border border-white/10 text-white rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-[#C9A227] focus:border-[#C9A227] outline-none cursor-pointer transition-colors hover:border-white/20"
+            >
+              <option value="All">All Regions (Continent)</option>
+              {uniqueRegions.filter(r => r !== 'All').map(r => (
+                <option key={r} value={r} className="bg-[#0F1116] text-white">{r}</option>
+              ))}
+            </select>
+          </div>
+
+          {/* Country Dropdown */}
+          <div className="space-y-1.5">
+            <label className="text-[10px] font-mono text-white/50 uppercase tracking-widest block font-bold">Focus Country</label>
+            <select
+              value={selectedCountry || 'All'}
+              onChange={(e) => {
+                const c = e.target.value;
+                onSelectCountry(c === 'All' ? '' : c);
+              }}
+              className="w-full bg-black/45 border border-white/10 text-white rounded-xl py-2 px-3 text-xs focus:ring-1 focus:ring-[#C9A227] focus:border-[#C9A227] outline-none cursor-pointer transition-colors hover:border-white/20"
+            >
+              <option value="All">All Countries</option>
+              {uniqueCountries.map(c => (
+                <option key={c} value={c} className="bg-[#0F1116] text-white">{c}</option>
+              ))}
+            </select>
+          </div>
         </div>
 
         {/* Selected Centre Panel */}
@@ -354,14 +424,14 @@ export default function MapSection({
               {/* Main SVG Coastline Map Render */}
               <path
                 d={africaPath}
-                className="fill-[#0A0B0D] stroke-white/10 transition-colors pointer-events-none"
-                strokeWidth="1"
+                className="fill-[#1D2130] stroke-white/20 transition-colors pointer-events-none"
+                strokeWidth="1.2"
                 lineJoin="round"
               />
               <path
                 d={madagascarPath}
-                className="fill-[#0A0B0D] stroke-white/10 transition-colors pointer-events-none"
-                strokeWidth="1"
+                className="fill-[#1D2130] stroke-white/20 transition-colors pointer-events-none"
+                strokeWidth="1.2"
                 lineJoin="round"
               />
 
@@ -417,8 +487,8 @@ export default function MapSection({
                     <circle
                       cx={centre.x}
                       cy={centre.y}
-                      r={isSpotlighted ? 5.5 : isHovered ? 4.5 : 3.5}
-                      className={`${colorConfig.dot} transition-all stroke-[#0A0B0D] stroke-1.5`}
+                      r={isSpotlighted ? 6.5 : isHovered ? 5.5 : 4.5}
+                      className={`fill-current ${colorConfig.text} transition-all stroke-white stroke-1.5 shadow-md`}
                     />
                   </g>
                 );

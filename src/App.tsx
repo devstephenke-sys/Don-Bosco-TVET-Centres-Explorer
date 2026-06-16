@@ -176,6 +176,7 @@ export default function App() {
               selectedCountry={selectedCountry}
               onSelectCountry={setSelectedCountry}
               selectedRegion={selectedRegion}
+              onSelectRegion={setSelectedRegion}
             />
           )}
 
