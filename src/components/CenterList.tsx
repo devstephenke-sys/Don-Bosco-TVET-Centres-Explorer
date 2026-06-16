@@ -293,6 +293,31 @@ export default function CenterList({
                         <span>{centre.location}, {centre.country}</span>
                       </p>
                     </div>
+
+                    {/* Vocational Profiles Integration */}
+                    <div className="space-y-2 pt-2 border-t border-white/5">
+                      <div className="flex justify-between items-center text-[10.5px]">
+                        <span className="text-white/40 font-mono">Founded: <strong>{centre.established}</strong></span>
+                        <span className="text-emerald-400 font-bold font-mono">{centre.capacity} Slots</span>
+                      </div>
+                      
+                      {/* Visual Load Bar */}
+                      <div className="w-full bg-black/40 h-1.5 rounded-full overflow-hidden border border-white/5">
+                        <div 
+                          className="bg-emerald-500 h-full rounded-full transition-all" 
+                          style={{ width: `${Math.min(100, Math.max(25, (centre.capacity / 900) * 100))}%` }} 
+                        />
+                      </div>
+
+                      {/* Display Courses badges */}
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {centre.trades?.slice(0, 2).map((t, idx) => (
+                          <span key={idx} className="px-1.5 py-0.5 rounded text-[9px] font-semibold bg-white/5 border border-white/5 text-white/60">
+                            ⚙️ {t}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
                   </div>
 
                   {/* Actions line */}

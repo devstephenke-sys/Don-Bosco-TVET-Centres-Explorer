@@ -7,7 +7,11 @@ export interface TVETCentre {
   centre: string;
   location: string;
   coordinates: TVETCoordinate;
-  country: string; // We'll enrich the data with its country name for easier processing
+  country: string;
+  region: string;
+  trades: string[];
+  capacity: number;
+  established: number;
 }
 
 export interface TVETStats {

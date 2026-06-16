@@ -24,6 +24,24 @@ function calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lo
   return parseFloat((R * c).toFixed(1)); // Return rounded km value
 }
 
+// Calculate Bearing angle from Center 1 to Center 2
+function calculateBearing(lat1: number, lon1: number, lat2: number, lon2: number): number {
+  const dLon = (lon2 - lon1) * Math.PI / 180;
+  const lat1Rad = lat1 * Math.PI / 180;
+  const lat2Rad = lat2 * Math.PI / 180;
+  
+  const y = Math.sin(dLon) * Math.cos(lat2Rad);
+  const x = Math.cos(lat1Rad) * Math.sin(lat2Rad) - Math.sin(lat1Rad) * Math.cos(lat2Rad) * Math.cos(dLon);
+  let brng = Math.atan2(y, x) * 180 / Math.PI;
+  return parseFloat(((brng + 360) % 360).toFixed(1));
+}
+
+function getCompassDirection(bearing: number): string {
+  const directions = ["N", "NNE", "NE", "ENE", "E", "ESE", "SE", "SSE", "S", "SSW", "SW", "WSW", "W", "WNW", "NW", "NNW"];
+  const index = Math.round(bearing / 22.5) % 16;
+  return directions[index];
+}
+
 export default function CompareCenters({
   compareList,
   onRemoveFromCompare,
@@ -173,6 +191,67 @@ export default function CompareCenters({
           {compareList.length >= 2 && distanceMatrix && (
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               
+              {/* Compass Vector and Bearing Card */}
+              {(() => {
+                const c1 = compareList[0];
+                const c2 = compareList[1];
+                const bearing = calculateBearing(c1.coordinates.lat, c1.coordinates.lon, c2.coordinates.lat, c2.coordinates.lon);
+                const dist = calculateHaversineDistance(c1.coordinates.lat, c1.coordinates.lon, c2.coordinates.lat, c2.coordinates.lon);
+                const directionLetter = getCompassDirection(bearing);
+
+                return (
+                  <div className="bg-[#0F1116] border border-white/10 rounded-2xl p-6 shadow-lg flex flex-col md:flex-row gap-6 items-center justify-between col-span-1 lg:col-span-2">
+                    <div className="space-y-3.5 flex-1 w-full md:w-auto">
+                      <div className="flex items-center gap-2">
+                        <Navigation className="w-5 h-5 text-[#C9A227] animate-pulse" />
+                        <h4 className="font-bold text-sm text-white">True Spherical Vector Heading</h4>
+                      </div>
+                      <p className="text-[11.5px] text-white/50 leading-relaxed">
+                        Calculates orthodromic vectors between the first two elements in your compare list. Plotted from <strong>{c1.centre} ({c1.country})</strong> as initial reference to <strong>{c2.centre} ({c2.country})</strong>.
+                      </p>
+                      
+                      <div className="grid grid-cols-2 gap-4 pt-1">
+                        <div className="bg-black/45 p-3 rounded-xl border border-white/5">
+                          <span className="text-[8.5px] font-mono uppercase tracking-wider text-white/30 block">True Heading Angle</span>
+                          <span className="text-base font-bold text-[#C9A227] font-mono mt-0.5 block">{bearing}° {directionLetter}</span>
+                        </div>
+                        <div className="bg-black/45 p-3 rounded-xl border border-white/5">
+                          <span className="text-[8.5px] font-mono uppercase tracking-wider text-white/30 block">Spatial Air Distance</span>
+                          <span className="text-base font-bold text-emerald-400 font-mono mt-0.5 block">{dist.toLocaleString()} km</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Decorative SVG Compass Needle */}
+                    <div className="relative w-36 h-36 shrink-0 bg-black/50 rounded-full border border-white/10 flex items-center justify-center overflow-hidden">
+                      <div className="absolute inset-1.5 border border-dashed border-white/5 rounded-full pointer-events-none" />
+                      <div className="absolute inset-6 border border-white/[0.03] rounded-full pointer-events-none" />
+                      
+                      <span className="absolute top-1 text-[9px] font-bold font-mono text-white/35">N</span>
+                      <span className="absolute bottom-1 text-[9px] font-bold font-mono text-white/35">S</span>
+                      <span className="absolute right-1.5 text-[9px] font-bold font-mono text-white/35">E</span>
+                      <span className="absolute left-1.5 text-[9px] font-bold font-mono text-white/35">W</span>
+
+                      {/* Rotating needle */}
+                      <div 
+                        className="w-full h-full absolute top-0 left-0 flex items-center justify-center transition-all duration-1000 pointer-events-none"
+                        style={{ transform: `rotate(${bearing}deg)` }}
+                      >
+                        {/* Needle body & tip */}
+                        <div className="absolute top-4 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-b-[18px] border-b-rose-500 shadow-lg shadow-rose-500/20" />
+                        <div className="absolute bottom-4 w-0 h-0 border-l-[5px] border-l-transparent border-r-[5px] border-r-transparent border-t-[18px] border-t-white/35" />
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="w-1 h-20 bg-white/10 rounded-full" />
+                        </div>
+                      </div>
+                      
+                      {/* Central bracket pin */}
+                      <div className="w-2.5 h-2.5 bg-black rounded-full border-2 border-[#C9A227] z-10 shadow-lg pointer-events-none" />
+                    </div>
+                  </div>
+                );
+              })()}
+
               {/* Distance Matrix Table */}
               <div className="bg-[#0F1116] border border-white/10 rounded-2xl p-5 shadow-lg">
                 <div className="flex items-center gap-2 mb-4">
