@@ -1,0 +1,6 @@
+{
+  "name": "Don Bosco TVET Explorer",
+  "description": "Interactive directory, analytics, and geographical mapping of Don Bosco vocational training centers across Africa.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
