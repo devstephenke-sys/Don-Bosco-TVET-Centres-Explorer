@@ -29,10 +29,10 @@ export default function App() {
   // Add or remove a center to the comparison list
   const handleAddToCompare = (centre: TVETCentre) => {
     setCompareList(prev => {
-      const exists = prev.some(c => c.centre === centre.centre);
+      const exists = prev.some(c => c.centre === centre.centre && c.country === centre.country);
       if (exists) {
         // Remove it
-        return prev.filter(c => c.centre !== centre.centre);
+        return prev.filter(c => !(c.centre === centre.centre && c.country === centre.country));
       } else {
         // Add if limit (say 6 max) isn't reached
         if (prev.length >= 6) {
@@ -45,7 +45,7 @@ export default function App() {
   };
 
   const handleRemoveFromCompare = (centre: TVETCentre) => {
-    setCompareList(prev => prev.filter(c => c.centre !== centre.centre));
+    setCompareList(prev => prev.filter(c => !(c.centre === centre.centre && c.country === centre.country)));
   };
 
   const handleClearCompare = () => setCompareList([]);
@@ -223,6 +223,8 @@ export default function App() {
               onClearCompare={handleClearCompare}
               onActiveTab={setActiveTab}
               onSelectCentre={setSelectedCentre}
+              onSelectCountry={setSelectedCountry}
+              onSelectRegion={setSelectedRegion}
             />
           )}
         </div>

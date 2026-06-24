@@ -9,6 +9,8 @@ interface CompareCentersProps {
   onClearCompare: () => void;
   onActiveTab: (tab: any) => void;
   onSelectCentre: (centre: TVETCentre) => void;
+  onSelectCountry?: (country: string) => void;
+  onSelectRegion?: (region: string) => void;
 }
 
 // Proximity Calculator helper using Haversine formula
@@ -47,7 +49,9 @@ export default function CompareCenters({
   onRemoveFromCompare,
   onClearCompare,
   onActiveTab,
-  onSelectCentre
+  onSelectCentre,
+  onSelectCountry,
+  onSelectRegion
 }: CompareCentersProps) {
   
   // Calculate relative geographic statistics if there are at least two centers selected
@@ -56,12 +60,14 @@ export default function CompareCenters({
     const matrix: { [key: string]: { [key: string]: number } } = {};
     
     compareList.forEach(c1 => {
-      matrix[c1.centre] = {};
+      const key1 = `${c1.centre} (${c1.country})`;
+      matrix[key1] = {};
       compareList.forEach(c2 => {
-        if (c1.centre === c2.centre) {
-          matrix[c1.centre][c2.centre] = 0;
+        const key2 = `${c2.centre} (${c2.country})`;
+        if (c1.centre === c2.centre && c1.country === c2.country) {
+          matrix[key1][key2] = 0;
         } else {
-          matrix[c1.centre][c2.centre] = calculateHaversineDistance(
+          matrix[key1][key2] = calculateHaversineDistance(
             c1.coordinates.lat, c1.coordinates.lon,
             c2.coordinates.lat, c2.coordinates.lon
           );
@@ -126,7 +132,7 @@ export default function CompareCenters({
               const regionStyle = REGION_COLORS[region] || { border: "border-white/10", bg: "bg-white/5", text: "text-white/70" };
               
               return (
-                <div key={centre.centre} className="bg-[#0F1116] border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col justify-between relative">
+                <div key={`${centre.centre}-${centre.country}`} className="bg-[#0F1116] border border-white/10 rounded-2xl p-5 shadow-lg flex flex-col justify-between relative">
                   
                   {/* Remove Card Trigger */}
                   <button
@@ -173,6 +179,8 @@ export default function CompareCenters({
                     <button
                       onClick={() => {
                         onSelectCentre(centre);
+                        if (onSelectRegion) onSelectRegion(COUNTRY_REGIONS[centre.country] || '');
+                        if (onSelectCountry) onSelectCountry(centre.country);
                         onActiveTab('map');
                       }}
                       className="flex-1 inline-flex items-center justify-center gap-1 px-3 py-2 text-[11px] font-bold bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-lg transition-colors cursor-pointer"
@@ -264,32 +272,36 @@ export default function CompareCenters({
                       <tr>
                         <th className="px-4 py-3 font-semibold">Tvet Centre</th>
                         {compareList.map(c => (
-                          <th key={c.centre} className="px-4 py-3 font-semibold truncate max-w-[120px]" title={c.centre}>
-                            {c.centre.split(' ').slice(0, 2).join(' ')}...
+                          <th key={`${c.centre}-${c.country}`} className="px-4 py-3 font-semibold truncate max-w-[120px]" title={`${c.centre} (${c.country})`}>
+                            {c.centre.split(' ').slice(0, 2).join(' ')} ({c.country})
                           </th>
                         ))}
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-white/5 text-white/70 font-medium">
-                      {compareList.map(c1 => (
-                        <tr key={c1.centre} className="hover:bg-white/5 transition-colors">
-                          <td className="px-4 py-3 font-bold truncate max-w-[140px] text-white" title={c1.centre}>
-                            {c1.centre}
-                          </td>
-                          {compareList.map(c2 => {
-                            const val = distanceMatrix[c1.centre][c2.centre];
-                            return (
-                              <td key={c2.centre} className="px-4 py-3 font-mono text-white/60">
-                                {val === 0 ? (
-                                  <span className="text-white/20 font-sans italic">Core</span>
-                                ) : (
-                                  <span className="font-semibold text-white/90">{val.toLocaleString()} km</span>
-                                )}
-                              </td>
-                            );
-                          })}
-                        </tr>
-                      ))}
+                      {compareList.map(c1 => {
+                        const key1 = `${c1.centre} (${c1.country})`;
+                        return (
+                          <tr key={`${c1.centre}-${c1.country}`} className="hover:bg-white/5 transition-colors">
+                            <td className="px-4 py-3 font-bold truncate max-w-[140px] text-white" title={key1}>
+                              {c1.centre} <span className="text-white/40 text-[10px] font-normal font-sans">({c1.country})</span>
+                            </td>
+                            {compareList.map(c2 => {
+                              const key2 = `${c2.centre} (${c2.country})`;
+                              const val = distanceMatrix[key1][key2];
+                              return (
+                                <td key={`${c2.centre}-${c2.country}`} className="px-4 py-3 font-mono text-white/60">
+                                  {val === 0 ? (
+                                    <span className="text-white/20 font-sans italic">Core</span>
+                                  ) : (
+                                    <span className="font-semibold text-white/90">{val.toLocaleString()} km</span>
+                                  )}
+                                </td>
+                              );
+                            })}
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>

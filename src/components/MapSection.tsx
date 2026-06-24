@@ -233,7 +233,7 @@ export default function MapSection({
       
       const matchesCountry = !selectedCountry || centre.country === selectedCountry;
       const matchesRegion = !selectedRegion || region === selectedRegion;
-      const isSelected = selectedCentre?.centre === centre.centre;
+      const isSelected = selectedCentre?.centre === centre.centre && selectedCentre?.country === centre.country;
       
       return {
         ...centre,
@@ -335,7 +335,7 @@ export default function MapSection({
             <div className="bg-[#0A0B0D] border border-white/15 rounded-xl mt-1.5 overflow-hidden shadow-2xl divide-y divide-white/5">
               {searchResults.map(res => (
                 <button
-                  key={res.centre}
+                  key={`${res.centre}-${res.country}`}
                   onClick={() => {
                     onSelectCentre(res);
                     centerOnItem(res);
@@ -465,7 +465,7 @@ export default function MapSection({
               <div className="pt-1.5 flex flex-col gap-1.5">
                 <button
                   onClick={() => {
-                    const item = filteredCentresWithCoords.find(c => c.centre === selectedCentre.centre);
+                    const item = filteredCentresWithCoords.find(c => c.centre === selectedCentre.centre && c.country === selectedCentre.country);
                     if (item) centerOnItem(item);
                   }}
                   className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-1.5 text-xs font-semibold bg-[#C9A227] hover:bg-[#C9A227]/90 text-black rounded-lg transition-colors shadow-sm shadow-[#C9A227]/10 duration-200 cursor-pointer"
@@ -601,14 +601,14 @@ export default function MapSection({
                 d={africaPath}
                 className="fill-black/35 stroke-none transition-colors"
                 strokeWidth="1.5"
-                lineJoin="round"
+                strokeLinejoin="round"
               />
               {/* Madagascar Continental Shadow Base */}
               <path
                 d={madagascarPath}
                 className="fill-black/35 stroke-none transition-colors"
                 strokeWidth="1.5"
-                lineJoin="round"
+                strokeLinejoin="round"
               />
 
               {/* Main SVG Coastline Map Render */}
@@ -616,13 +616,13 @@ export default function MapSection({
                 d={africaPath}
                 className={`${styleConfig.coastline} transition-colors duration-500 pointer-events-none`}
                 strokeWidth="1.2"
-                lineJoin="round"
+                strokeLinejoin="round"
               />
               <path
                 d={madagascarPath}
                 className={`${styleConfig.coastline} transition-colors duration-500 pointer-events-none`}
                 strokeWidth="1.2"
-                lineJoin="round"
+                strokeLinejoin="round"
               />
 
               {/* TVET Centre Coordinate Nodes / Markers */}
@@ -633,21 +633,22 @@ export default function MapSection({
                   text: "text-indigo-750",
                   dot: "bg-indigo-500"
                 };
-                const isSpotlighted = selectedCentre?.centre === centre.centre;
-                const isHovered = hoveredCentreId === centre.centre;
+                const uniqueId = `${centre.centre}-${centre.country}`;
+                const isSpotlighted = selectedCentre?.centre === centre.centre && selectedCentre?.country === centre.country;
+                const isHovered = hoveredCentreId === uniqueId;
                 
                 // Dim markers that don't match our active filter query
                 const opacity = !centre.isActive ? "opacity-15 pointer-events-none" : "opacity-100";
 
                 return (
                   <g
-                    key={centre.centre}
+                    key={uniqueId}
                     className={`transition-all duration-300 cursor-pointer ${opacity}`}
                     onClick={(e) => {
                       e.stopPropagation();
                       onSelectCentre(centre);
                     }}
-                    onMouseEnter={() => setHoveredCentreId(centre.centre)}
+                    onMouseEnter={() => setHoveredCentreId(uniqueId)}
                     onMouseLeave={() => setHoveredCentreId(null)}
                   >
                     {/* Pulsing ring around spotlighted / clicked center */}
@@ -681,7 +682,8 @@ export default function MapSection({
 
               {/* Interactive Info Window overlaying on the hover node */}
               {filteredCentresWithCoords.map((centre) => {
-                if (hoveredCentreId !== centre.centre) return null;
+                const uniqueId = `${centre.centre}-${centre.country}`;
+                if (hoveredCentreId !== uniqueId) return null;
                 const regionColor = REGION_COLORS[centre.region] || {
                   border: "border-zinc-500/20",
                   bg: "bg-zinc-50/50",
@@ -692,7 +694,7 @@ export default function MapSection({
 
                 return (
                   <g
-                    key={`tooltip-${centre.centre}`}
+                    key={`tooltip-${uniqueId}`}
                     className="pointer-events-none"
                     transform={`translate(${centre.x}, ${centre.y})`}
                   >

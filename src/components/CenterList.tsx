@@ -244,14 +244,14 @@ export default function CenterList({
         layoutMode === 'grid' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredCentres.map((centre) => {
-              const isSelected = selectedCentre?.centre === centre.centre;
+              const isSelected = selectedCentre?.centre === centre.centre && selectedCentre?.country === centre.country;
               const region = COUNTRY_REGIONS[centre.country] || 'Other';
               const regionStyle = REGION_COLORS[region] || { border: "border-white/10", bg: "bg-white/5", text: "text-white/70" };
-              const inComparison = compareList.some(c => c.centre === centre.centre);
+              const inComparison = compareList.some(c => c.centre === centre.centre && c.country === centre.country);
 
               return (
                 <div
-                  key={centre.centre}
+                  key={`${centre.centre}-${centre.country}`}
                   onClick={() => onSelectCentre(centre)}
                   className={`group relative flex flex-col justify-between bg-[#0F1116] border rounded-2xl p-5 shadow-lg hover:bg-[#14171D] transition-all cursor-pointer ${
                     isSelected 
@@ -346,14 +346,14 @@ export default function CenterList({
           /* List layout */
           <div className="bg-[#0F1116] border border-white/10 rounded-2xl overflow-hidden shadow-lg divide-y divide-white/5">
             {filteredCentres.map((centre) => {
-              const isSelected = selectedCentre?.centre === centre.centre;
+              const isSelected = selectedCentre?.centre === centre.centre && selectedCentre?.country === centre.country;
               const region = COUNTRY_REGIONS[centre.country] || 'Other';
               const regionStyle = REGION_COLORS[region] || { border: "border-white/10", bg: "bg-white/5", text: "text-white/70" };
-              const inComparison = compareList.some(c => c.centre === centre.centre);
+              const inComparison = compareList.some(c => c.centre === centre.centre && c.country === centre.country);
 
               return (
                 <div
-                  key={centre.centre}
+                  key={`${centre.centre}-${centre.country}`}
                   onClick={() => onSelectCentre(centre)}
                   className={`group/row flex flex-col md:flex-row md:items-center justify-between p-4 gap-4 cursor-pointer hover:bg-white/5 transition-colors ${
                     isSelected ? 'bg-[#C9A227]/10' : ''
